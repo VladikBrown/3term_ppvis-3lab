@@ -1,27 +1,16 @@
 public class Locomotive {
-    private int indexOfPower;
-    private int operationPeriod;
+    private int power;
 
-    public Locomotive(int indexOfPower, int operationPeriod){
-        this.indexOfPower = indexOfPower;
-        this.operationPeriod = operationPeriod;
+    public Locomotive(int power){
+        this.power = power;
+
     }
 
     public int getIndexOfPower() {
-        return indexOfPower;
+        return power;
     }
 
-    public void setIndexOfPower(int indexOfPower) {
-        this.indexOfPower = indexOfPower;
+    public void setIndexOfPower(int power) {
+        this.power = power;
     }
-
-    public int getOperationPeriod() {
-        return operationPeriod;
-    }
-
-    public void setOperationPeriod(int operationPeriod) {
-        this.operationPeriod = operationPeriod;
-    }
-
-
 }

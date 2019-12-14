@@ -1,18 +1,41 @@
 abstract public class Station{
     abstract public int getID();
+    abstract public String getName();
 }
 
 class StationImplCargo extends Station implements ICargo{
-    private int amountOfCargos;
-    private int ID;
+    private volatile int amountOfCargos;
+    private Integer ID;
+    private String name;
 
-    public StationImplCargo(int id){
-        ID = id;
-    }
 
-    public StationImplCargo(int amountOfCargos, int id){
+    public StationImplCargo(int amountOfCargos, Integer id, String name){
         this.amountOfCargos = amountOfCargos;
         ID = id;
+        this.name = name;
+    }
+
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    public void setAmountOfCargos(int amountOfCargos) {
+        this.amountOfCargos = amountOfCargos;
     }
 
     public int getAmountOfCargos() {
@@ -29,25 +52,40 @@ class StationImplCargo extends Station implements ICargo{
             return unloadingCargos;
         }
         return 0;
-    }
-
-    public int getID() {
-        return ID;
     }
 }
 
 class StationImplPassengers extends Station implements IPassenger{
-    private int amountOfPassengers;
-    private int ID;
+    private volatile int amountOfPassengers;
+    private Integer ID;
+    private String name;
 
-    public StationImplPassengers(int id){
-        amountOfPassengers = 0;
-        ID = id;
-    }
-
-    public StationImplPassengers(int amountOfPassengers, int id){
+    public StationImplPassengers(int amountOfPassengers, Integer id, String name){
         this.amountOfPassengers = amountOfPassengers;
         ID = id;
+        this.name = name;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    public void setAmountOfPassengers(int amountOfPassengers) {
+        this.amountOfPassengers = amountOfPassengers;
     }
 
     public int getAmountOfPassengers() {
@@ -66,24 +104,40 @@ class StationImplPassengers extends Station implements IPassenger{
         return 0;
     }
 
-    public int getID() {
-        return ID;
-    }
 }
 
 class StationImplCargosPassengers extends Station implements ICargo, IPassenger{
-    private int amountOfCargos;
-    private int amountOfPassengers;
-    private int ID;
+    private volatile int amountOfCargos;
+    private volatile int amountOfPassengers;
+    private Integer ID;
+    private String name;
 
-    public StationImplCargosPassengers(int ID){
-        this.ID = ID;
-    }
-
-    public StationImplCargosPassengers(int amountOfCargos, int amountOfPassengers, int id){
+    public StationImplCargosPassengers(int amountOfCargos, int amountOfPassengers, Integer id, String name){
         this.amountOfCargos = amountOfCargos;
         this.amountOfPassengers = amountOfPassengers;
         this.ID = id;
+        this.name = name;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    public void setAmountOfCargos(int amountOfCargos) {
+        this.amountOfCargos = amountOfCargos;
     }
 
     public int getAmountOfCargos() {
@@ -102,6 +156,11 @@ class StationImplCargosPassengers extends Station implements ICargo, IPassenger{
         return 0;
     }
 
+
+    public void setAmountOfPassengers(int amountOfPassengers) {
+        this.amountOfPassengers = amountOfPassengers;
+    }
+
     public int getAmountOfPassengers() {
         return amountOfPassengers;
     }
@@ -118,7 +177,5 @@ class StationImplCargosPassengers extends Station implements ICargo, IPassenger{
         return 0;
     }
 
-    public int getID() {
-        return ID;
-    }
+
 }

@@ -1,14 +1,11 @@
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+abstract public class Carriage {
+    public static final int OWN_WEIGHT = 26000;
 
-abstract class Carriage {
-    protected static final int OWN_WEIGHT = 26000;
-
-    public static int getOwnWeight(){
-        return OWN_WEIGHT;
-    }
-    abstract public void calculateTotalWeight();
-    abstract public int getTotalWeight();
-    abstract public boolean isNotFilled();
+    abstract int getAvailableSpace();
+    abstract int getTotalWeight();
+    abstract int getRandomAmountOfContentToGo();
+    abstract void calculateTotalWeight();
+    abstract boolean isNotFilled();
 }
 
 interface ICargo{
@@ -23,22 +20,28 @@ interface IPassenger{
     int unloadPassengers(int unloadingPassengers);
 }
 
-interface ITrainUseable {
-    int getAvailableSpace();
-}
-
-class CarriageImplCargo extends  Carriage implements ICargo, ITrainUseable{
+class CarriageImplCargo extends Carriage implements ICargo{
 
     private static final int WEIGHT_OF_CARGO = 10;
     public static final int MAX_CARGOS = 138;
     private int totalWeight;
     private int amountOfCargos;
 
+    public CarriageImplCargo(int amountOfCargos){
+        if (amountOfCargos >= 0){
+            this.amountOfCargos = amountOfCargos;
+        }
+    }
+
     public int getAvailableSpace(){
         if(isNotFilled()) {
             return MAX_CARGOS - amountOfCargos;
         }
         else return 0;
+    }
+
+    public int getAmountOfCargos(){
+        return amountOfCargos;
     }
 
     public void uploadCargos(int uploadingCargos) {
@@ -57,16 +60,12 @@ class CarriageImplCargo extends  Carriage implements ICargo, ITrainUseable{
     }
 
     public void calculateTotalWeight() {
-        this.totalWeight = amountOfCargos * WEIGHT_OF_CARGO;
+        this.totalWeight = amountOfCargos * WEIGHT_OF_CARGO + Carriage.OWN_WEIGHT;
     }
 
     public int getTotalWeight() {
         calculateTotalWeight();
         return this.totalWeight;
-    }
-
-    public int getAmountOfCargos(){
-        return amountOfCargos;
     }
 
     public boolean isNotFilled() {
@@ -76,16 +75,26 @@ class CarriageImplCargo extends  Carriage implements ICargo, ITrainUseable{
         else {return false;
         }
     }
+
+    @Override
+    public int getRandomAmountOfContentToGo() {
+        return (int) (Math.random() * getAmountOfCargos());
+    }
 }
 
-class CarriageImplPassenger extends  Carriage implements IPassenger ,ITrainUseable{
+class CarriageImplPassenger extends Carriage implements IPassenger{
 
     private static final int WEIGHT_OF_PASSENGER = 70;
     public static final int MAX_PASSENGERS = 54;
     private int amountOfPassengers;
     private int totalWeight;
 
+    public CarriageImplPassenger(int amountOfPassengers){
+        this.amountOfPassengers = amountOfPassengers;
+    }
+
     public int getAmountOfPassengers() {
+
         return amountOfPassengers;
     }
 
@@ -104,7 +113,8 @@ class CarriageImplPassenger extends  Carriage implements IPassenger ,ITrainUseab
     }
 
     public void calculateTotalWeight() {
-        this.totalWeight = amountOfPassengers * WEIGHT_OF_PASSENGER;
+
+        this.totalWeight = amountOfPassengers * WEIGHT_OF_PASSENGER + Carriage.OWN_WEIGHT;
     }
 
     public int getTotalWeight() {
@@ -121,9 +131,14 @@ class CarriageImplPassenger extends  Carriage implements IPassenger ,ITrainUseab
     }
 
     public int getAvailableSpace() {
-       if(isNotFilled()) {
-           return MAX_PASSENGERS - amountOfPassengers;
-       }
-       else return 0;
+        if(isNotFilled()) {
+            return MAX_PASSENGERS - amountOfPassengers;
+        }
+        else return 0;
+    }
+
+    @Override
+    public int getRandomAmountOfContentToGo() {
+        return (int) (Math.random() * getAmountOfPassengers());
     }
 }

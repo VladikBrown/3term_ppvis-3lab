@@ -1,27 +1,83 @@
-import java.util.ArrayList;
+import railroad.support.Config;
 
-public class Train<T extends Carriage> {
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+public class Train implements Runnable{
+    private int id;
+    private String name;
     private Locomotive locomotive;
-    private ArrayList<T> carriages;
+    private ArrayList<Carriage> carriages = new ArrayList<>();
+    private List<Integer> route = new LinkedList<>();
+    private Iterator<Integer> routeIterator = route.listIterator();
+
     private int weightOfTrain;
     private Station currentStation;
-    private RailRoad dispatcherCenter;
+    private DispatcherCenter dispatcherCenter;
+
+    @Override
+    public void run() {
+
+    }
+
+    public Train(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter) {
+        this.dispatcherCenter = dispatcherCenter;
+        locomotive = new Locomotive(rawTrain.getPower());
+        this.id = rawTrain.getId();
+        this.name = rawTrain.getName();
+        route.addAll(rawTrain.getRoute());
+        prepareCarriages(rawTrain);
+        calculateWeight();
+    }
+
+    private void prepareCarriages(Config.RawTrain rawTrain){
+        for (Config.RawTrain.RawCarriage rawCarriage : rawTrain.getCarriages()) {
+            if(rawCarriage.getType().equals("Cargo")){
+                carriages.add(new CarriageImplCargo(rawCarriage.getAmountOfContent()));
+            }
+            if(rawCarriage.getType().equals("Passenger")){
+                carriages.add(new CarriageImplPassenger(rawCarriage.getAmountOfContent()));
+            }
+        }
+    }
+
+    // in seconds
+    public int calculateTravelTime(){
+        return dispatcherCenter.getDistance(currentStation.getID(), routeIterator.next())
+                / (weightOfTrain
+                / locomotive.getIndexOfPower());
+    }
 
     public void uploadAllCarriages(){
         for (Carriage carriage : carriages ) {
-            if (carriage instanceof ICargo && currentStation instanceof ICargo){
+            if (carriage instanceof CarriageImplCargo && currentStation instanceof ICargo){
+                ((StationImplCargo) currentStation).unloadCargos(carriage.getAvailableSpace());
                 ((CarriageImplCargo)carriage).uploadCargos(carriage.getAvailableSpace());
-                ((ICargo) currentStation).unloadCargos(carriage.getAvailableSpace());
             }
 
-            if (carriage instanceof IPassenger && currentStation instanceof IPassenger){
-                carriage.uploadCargos(carriage.getAvailableSpace());
+            if (carriage instanceof CarriageImplPassenger && currentStation instanceof IPassenger){
                 ((ICargo) currentStation).unloadCargos(carriage.getAvailableSpace());
+                ((CarriageImplPassenger)carriage).uploadPassengers(carriage.getAvailableSpace());
             }
         }
     }
     public void unloadAllCarriages(){
+        int movingContent;
+        for (Carriage carriage : carriages ) {
+            movingContent = carriage.getRandomAmountOfContentToGo();
+            if (carriage instanceof CarriageImplCargo && currentStation instanceof ICargo){
+                ((CarriageImplCargo)carriage).unloadCargos(movingContent);
+                ((StationImplCargo) currentStation).uploadCargos(movingContent);
+            }
 
+            if (carriage instanceof CarriageImplPassenger && currentStation instanceof IPassenger){
+                ((CarriageImplPassenger)carriage).unloadPassengers(movingContent);
+                ((ICargo) currentStation).uploadCargos(movingContent);
+            }
+        }
     }
 
     public void calculateWeight(){
@@ -32,22 +88,18 @@ public class Train<T extends Carriage> {
 
     public void move(int nextStation){
         if(dispatcherCenter.isWayValid(currentStation.getID(), nextStation)){
-            currentStation = (StationImplCargosPassengers) dispatcherCenter.getStation(nextStation);
+            currentStation = dispatcherCenter.getStation(nextStation);
 
         }
     }
 
-    public void work(String task){
-        if(currentStation instanceof ICargo && currentStation instanceof  IPassenger){
+    public void work(){
+        unloadAllCarriages();
+        uploadAllCarriages();
+    }
 
-        } else
-            if(currentStation instanceof ICargo){
-
-            } else
-                if(currentStation instanceof IPassenger){
-
-                }
-
+    public void skipStation(){
+        System.out.println("just chilling\n");
     }
 }
 
@@ -59,24 +111,39 @@ class CargoTrain extends Train{
     private int weightOfTrain;
     private Station currentStation;
 
+    public CargoTrain(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter) {
+        super(rawTrain, dispatcherCenter);
+    }
+
+
     @Override
-    public void work(String task) {
-        for (CarriageImplCargo carriage : carriages ) {
-            if (carriage instanceof ICargo && currentStation instanceof ICargo){
+    public void work() {
+        if(currentStation instanceof ICargo){
+            super.work();
+        }
+        else skipStation();
+    }
+
+    @Override
+    public void uploadAllCarriages() {
+        if (currentStation instanceof ICargo){
+            for (CarriageImplCargo carriage : carriages ) {
+                ((StationImplCargo) currentStation).unloadCargos(carriage.getAvailableSpace());
                 carriage.uploadCargos(carriage.getAvailableSpace());
-                ((ICargo) currentStation).unloadCargos(carriage.getAvailableSpace());
             }
         }
     }
 
     @Override
-    public void uploadAllCarriages() {
-
-    }
-
-    @Override
     public void unloadAllCarriages() {
-        super.unloadAllCarriages();
+        if (currentStation instanceof ICargo){
+            int movingCargo;
+            for (CarriageImplCargo carriage : carriages ) {
+                movingCargo = carriage.getRandomAmountOfContentToGo();
+                carriage.uploadCargos(movingCargo);
+                ((StationImplCargo) currentStation).unloadCargos(movingCargo);
+            }
+        }
     }
 }
 
@@ -86,23 +153,36 @@ class PassengerTrain extends  Train{
     private int weightOfTrain;
     private Station currentStation;
 
+    public PassengerTrain(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter) {
+        super(rawTrain, dispatcherCenter);
+    }
+
     @Override
-    public void work(String task) {
-        for (CarriageImplPassenger carriage : carriages ) {
-            if (carriage instanceof IPassenger && currentStation instanceof IPassenger){
-                carriage.uploadPassengers(carriage.getAvailableSpace());
-                 ((IPassenger) currentStation).unloadPassengers(carriage.getAvailableSpace());
-            }
+    public void work() {
+        if(currentStation instanceof IPassenger){
+            super.work();
         }
     }
 
     @Override
     public void uploadAllCarriages() {
-        super.uploadAllCarriages();
+        if (currentStation instanceof IPassenger){
+            for (CarriageImplPassenger carriage : carriages ) {
+                ((StationImplPassengers) currentStation).unloadPassengers(carriage.getAvailableSpace());
+                carriage.uploadPassengers(carriage.getAvailableSpace());
+            }
+        }
     }
 
     @Override
     public void unloadAllCarriages() {
-        super.unloadAllCarriages();
+        if (currentStation instanceof ICargo){
+            int movingCargo;
+            for (CarriageImplPassenger carriage : carriages ) {
+                movingCargo = carriage.getRandomAmountOfContentToGo();
+                carriage.uploadPassengers(movingCargo);
+                ((StationImplPassengers) currentStation).unloadPassengers(movingCargo);
+            }
+        }
     }
 }
