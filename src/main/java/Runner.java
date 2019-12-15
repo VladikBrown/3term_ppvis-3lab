@@ -5,10 +5,9 @@ import java.io.*;
 
 public class Runner {
     public static void main(String[] args) throws IOException {
-        DispatcherCenter dispatcherCenter = DispatcherCenter.getRailRoad("rt");
-        Config config = ConfigReader.read(DispatcherCenter.CONFIG_PATH);
-        dispatcherCenter.applyConfigurationOfStations(config);
-
+        RailRoadModel railRoadModel = new RailRoadModel();
+        railRoadModel.start();
+        //ошибка в move concurrent modification
     }
 }
 

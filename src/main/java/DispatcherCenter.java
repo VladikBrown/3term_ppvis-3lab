@@ -19,7 +19,7 @@ public final class DispatcherCenter extends Thread{
 
 
     private static int[][] adjencyMatrix = new int[0][0];
-    public Map<Integer, Station> stations = new HashMap<>();
+    public Map<Integer, Station> stations = new HashMap<Integer, Station>();
 
     private static DispatcherCenter dispatcherCenter;
 

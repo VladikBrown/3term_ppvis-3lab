@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Train implements Runnable{
     private int id;
@@ -20,7 +21,13 @@ public class Train implements Runnable{
 
     @Override
     public void run() {
-
+        while (routeIterator.hasNext()){
+            try {
+                move(routeIterator.next());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Train(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter) {
@@ -86,8 +93,16 @@ public class Train implements Runnable{
         }
     }
 
-    public void move(int nextStation){
+    public void move(int nextStation) throws InterruptedException {
         if(dispatcherCenter.isWayValid(currentStation.getID(), nextStation)){
+            try{
+                //можно сделать класс для вывода по типу паттерна команда
+                System.out.println(this.name + "moves from " + currentStation.getName() + " to" + dispatcherCenter.stations.get(nextStation));
+                TimeUnit.SECONDS.sleep(calculateTravelTime());
+                work();
+            } catch (InterruptedException e){
+                e.printStackTrace();
+            }
             currentStation = dispatcherCenter.getStation(nextStation);
 
         }

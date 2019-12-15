@@ -1,16 +1,22 @@
 import railroad.support.Config;
+import railroad.support.ConfigReader;
 
+import java.io.IOException;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RailRoadModel {
     private DispatcherCenter dispatcherCenter;
-    private ConcurrentLinkedQueue<Train> trains;
+    private ConcurrentLinkedQueue<Train> trains = new ConcurrentLinkedQueue<>();
 
-
-
-
-
-
+    public void start() throws IOException {
+        dispatcherCenter = DispatcherCenter.getRailRoad("45");
+        Config config = ConfigReader.read(DispatcherCenter.CONFIG_PATH);
+        applyConfigurationOfTrains(config);
+       //ExecutorService exec = Executors.newFixedThreadPool(1);
+        trains.peek().run();
+    }
 
     public void applyConfigurationOfTrains(Config config) {
         for (Config.RawTrain rawTrain : config.getTrains()) {
