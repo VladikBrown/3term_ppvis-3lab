@@ -19,7 +19,7 @@ public final class DispatcherCenter extends Thread{
 
 
     private static int[][] adjencyMatrix = new int[0][0];
-    public Map<Integer, Station> stations = new HashMap<Integer, Station>();
+    public Map<Integer, Station> stations = new HashMap<>();
 
     private static DispatcherCenter dispatcherCenter;
 
@@ -56,11 +56,14 @@ public final class DispatcherCenter extends Thread{
     }
 
     public boolean isWayValid(int currentStation, int nextStation) {
-        return true;
+        if(adjencyMatrix[currentStation-1][nextStation-1] != 0) {
+            return true;
+        }
+        else return false;
     }
 
     public Station getStation(int stationID) {
-        return stations.get(stationID - 1);
+        return stations.get(stationID);
     }
 
     public void applyConfigurationOfStations(Config config) {

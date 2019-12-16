@@ -10,12 +10,16 @@ public class RailRoadModel {
     private DispatcherCenter dispatcherCenter;
     private ConcurrentLinkedQueue<Train> trains = new ConcurrentLinkedQueue<>();
 
-    public void start() throws IOException {
-        dispatcherCenter = DispatcherCenter.getRailRoad("45");
+    public void start(String path) throws IOException {
+        initDispatcherCenter(path);
         Config config = ConfigReader.read(DispatcherCenter.CONFIG_PATH);
         applyConfigurationOfTrains(config);
        //ExecutorService exec = Executors.newFixedThreadPool(1);
         trains.peek().run();
+    }
+
+    public void initDispatcherCenter(String path) throws IOException {
+        dispatcherCenter = DispatcherCenter.getRailRoad(path);
     }
 
     public void applyConfigurationOfTrains(Config config) {

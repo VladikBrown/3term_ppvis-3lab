@@ -1,6 +1,5 @@
 import railroad.support.Config;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,8 +11,10 @@ public class Train implements Runnable{
     private String name;
     private Locomotive locomotive;
     private ArrayList<Carriage> carriages = new ArrayList<>();
-    private List<Integer> route = new LinkedList<>();
-    private Iterator<Integer> routeIterator = route.listIterator();
+    private List<Integer> route = new ArrayList<>();
+    private Integer previousPosInRoute = -1;
+    private Integer currentPosInRoute = 0;
+    private Integer nextPosInRoute = 1;
 
     private int weightOfTrain;
     private Station currentStation;
@@ -21,9 +22,9 @@ public class Train implements Runnable{
 
     @Override
     public void run() {
-        while (routeIterator.hasNext()){
+        while(currentPosInRoute <= route.size()){
             try {
-                move(routeIterator.next());
+                move(nextPosInRoute);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -38,6 +39,7 @@ public class Train implements Runnable{
         route.addAll(rawTrain.getRoute());
         prepareCarriages(rawTrain);
         calculateWeight();
+        currentStation = dispatcherCenter.stations.get(route.get(currentPosInRoute));
     }
 
     private void prepareCarriages(Config.RawTrain rawTrain){
@@ -53,7 +55,7 @@ public class Train implements Runnable{
 
     // in seconds
     public int calculateTravelTime(){
-        return dispatcherCenter.getDistance(currentStation.getID(), routeIterator.next())
+        return dispatcherCenter.getDistance(currentStation.getID(), route.get(nextPosInRoute))
                 / (weightOfTrain
                 / locomotive.getIndexOfPower());
     }
@@ -94,18 +96,24 @@ public class Train implements Runnable{
     }
 
     public void move(int nextStation) throws InterruptedException {
-        if(dispatcherCenter.isWayValid(currentStation.getID(), nextStation)){
+        if(dispatcherCenter.isWayValid(currentStation.getID(), route.get(nextStation))){
             try{
                 //можно сделать класс для вывода по типу паттерна команда
-                System.out.println(this.name + "moves from " + currentStation.getName() + " to" + dispatcherCenter.stations.get(nextStation));
+                System.out.println(this.name + " moves from " + currentStation.getName()
+                        + " to " + dispatcherCenter.stations.get(route.get(nextStation)).getName());
                 TimeUnit.SECONDS.sleep(calculateTravelTime());
-                work();
             } catch (InterruptedException e){
                 e.printStackTrace();
             }
-            currentStation = dispatcherCenter.getStation(nextStation);
-
+            currentStation = dispatcherCenter.getStation(route.get(nextStation));
+            increaseCurrentPosInRoute();
         }
+    }
+
+    private void increaseCurrentPosInRoute(){
+        previousPosInRoute++;
+        currentPosInRoute++;
+        nextPosInRoute++;
     }
 
     public void work(){
