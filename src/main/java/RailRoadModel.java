@@ -14,7 +14,6 @@ public class RailRoadModel {
         initDispatcherCenter(path);
         Config config = ConfigReader.read(DispatcherCenter.CONFIG_PATH);
         applyConfigurationOfTrains(config);
-       //ExecutorService exec = Executors.newFixedThreadPool(1);
         for (Train train: trains) {
             ExecutorService exec = Executors.newFixedThreadPool(1);
             exec.execute(train);

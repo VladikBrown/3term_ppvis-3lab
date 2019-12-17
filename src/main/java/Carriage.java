@@ -59,6 +59,7 @@ class CarriageImplCargo extends Carriage implements ICargo{
         return 0;
     }
 
+    @Override
     public void calculateTotalWeight() {
         this.totalWeight = amountOfCargos * WEIGHT_OF_CARGO + Carriage.OWN_WEIGHT;
     }
@@ -68,6 +69,7 @@ class CarriageImplCargo extends Carriage implements ICargo{
         return this.totalWeight;
     }
 
+    @Override
     public boolean isNotFilled() {
         if(amountOfCargos < MAX_CARGOS){
             return true;

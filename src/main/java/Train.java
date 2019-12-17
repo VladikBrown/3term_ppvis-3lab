@@ -63,6 +63,7 @@ public class Train implements Runnable{
 
     protected void uploadAllCarriages() throws InterruptedException {
         for (Carriage carriage : carriages ) {
+            //убрать голый параметр
             TimeUnit.SECONDS.sleep(1);
             if (carriage instanceof CarriageImplCargo && currentStation instanceof ICargo){
                 ((ICargo) currentStation).unloadCargos(carriage.getAvailableSpace());

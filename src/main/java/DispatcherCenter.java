@@ -17,13 +17,14 @@ public final class DispatcherCenter extends Thread{
     public static final int STATION_PASSENGER_RESOURCE = 1000;
     public static final int STATION_CARGO_RESOURCE = 1000;
 
-
+    //пофикстить объявление
     private static int[][] adjencyMatrix = new int[0][0];
-    public Map<Integer, Station> stations = new HashMap<>();
+    public Map<Integer, Station> stations;
 
     private static DispatcherCenter dispatcherCenter;
 
     private DispatcherCenter(String path) throws IOException {
+        stations = new HashMap<>();
         Config config = ConfigReader.read(CONFIG_PATH);
         applyConfigurationOfStations(config);
         int size = stations.size();
