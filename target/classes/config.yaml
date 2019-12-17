@@ -1,0 +1,51 @@
+stations:
+   - id: 1
+     name: "Minsk"
+     type: "Cargo and Passenger"
+   - id: 2
+     name: "Moscow"
+     type: "Passenger"
+   - id: 3
+     name: "Saint-Petersburg"
+     type: "Cargo and Passenger"
+   - id: 4
+     name: "Gomel"
+     type: "Cargo"
+   - id: 5
+     name: "Brest"
+     type: "Passenger"
+   - id: 6
+     name: "Warsaw"
+     type: "Cargo and Passenger"
+   - id: 7
+     name: "Vitebsk"
+     type: "Cargo"
+   - id: 8
+     name: "Grodno"
+     type: "Cargo and Passenger"
+   - id: 9
+     name: "Vilnius"
+     type: "Cargo and Passenger"
+trains:
+   - id: 1
+     name: "SPB - Warsaw"
+     type: "Cargo and Passenger"
+     power: 1400
+     carriages:
+        - type: "Passenger"
+          amountOfContent: 10
+        - type: "Passenger"
+          amountOfContent: 10
+        - type: "Passenger"
+          amountOfContent: 10
+        - type: "Cargo"
+          amountOfContent: 10
+        - type: "Cargo"
+          amountOfContent: 10
+     route:
+        - 3
+        - 2
+        - 7
+        - 1
+        - 5
+        - 6
