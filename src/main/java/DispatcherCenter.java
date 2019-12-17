@@ -52,7 +52,7 @@ public final class DispatcherCenter extends Thread{
     }
 
     public int getDistance(int currentStation, int nextStation){
-        return adjencyMatrix[currentStation][nextStation];
+        return adjencyMatrix[currentStation-1][nextStation-1];
     }
 
     public boolean isWayValid(int currentStation, int nextStation) {
@@ -84,7 +84,6 @@ public final class DispatcherCenter extends Thread{
                 }
             }
         }
-
     }
 
     public void readMatrix(String path) throws IOException {

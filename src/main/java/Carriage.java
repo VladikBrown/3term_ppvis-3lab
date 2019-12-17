@@ -69,7 +69,7 @@ class CarriageImplCargo extends Carriage implements ICargo{
     }
 
     public boolean isNotFilled() {
-        if(amountOfCargos >= MAX_CARGOS){
+        if(amountOfCargos < MAX_CARGOS){
             return true;
         }
         else {return false;
@@ -123,7 +123,7 @@ class CarriageImplPassenger extends Carriage implements IPassenger{
     }
 
     public boolean isNotFilled() {
-        if(amountOfPassengers >= MAX_PASSENGERS){
+        if(amountOfPassengers < MAX_PASSENGERS){
             return true;
         }
         else {return false;

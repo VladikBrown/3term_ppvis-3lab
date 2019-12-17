@@ -15,7 +15,10 @@ public class RailRoadModel {
         Config config = ConfigReader.read(DispatcherCenter.CONFIG_PATH);
         applyConfigurationOfTrains(config);
        //ExecutorService exec = Executors.newFixedThreadPool(1);
-        trains.peek().run();
+        for (Train train: trains) {
+            ExecutorService exec = Executors.newFixedThreadPool(1);
+            exec.execute(train);
+        }
     }
 
     public void initDispatcherCenter(String path) throws IOException {

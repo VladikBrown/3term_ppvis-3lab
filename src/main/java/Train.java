@@ -22,7 +22,7 @@ public class Train implements Runnable{
 
     @Override
     public void run() {
-        while(currentPosInRoute <= route.size()){
+        while(currentPosInRoute < route.size()-1){
             try {
                 move(nextPosInRoute);
             } catch (InterruptedException e) {
@@ -60,31 +60,34 @@ public class Train implements Runnable{
                 / locomotive.getIndexOfPower());
     }
 
-    public void uploadAllCarriages(){
+    public void uploadAllCarriages() throws InterruptedException {
         for (Carriage carriage : carriages ) {
+            TimeUnit.SECONDS.sleep(1);
             if (carriage instanceof CarriageImplCargo && currentStation instanceof ICargo){
-                ((StationImplCargo) currentStation).unloadCargos(carriage.getAvailableSpace());
+                ((ICargo) currentStation).unloadCargos(carriage.getAvailableSpace());
                 ((CarriageImplCargo)carriage).uploadCargos(carriage.getAvailableSpace());
             }
 
             if (carriage instanceof CarriageImplPassenger && currentStation instanceof IPassenger){
-                ((ICargo) currentStation).unloadCargos(carriage.getAvailableSpace());
+                ((IPassenger) currentStation).unloadPassengers(carriage.getAvailableSpace());
                 ((CarriageImplPassenger)carriage).uploadPassengers(carriage.getAvailableSpace());
             }
         }
     }
     public void unloadAllCarriages(){
         int movingContent;
+        int counterOfCarriages = 0;
         for (Carriage carriage : carriages ) {
+            System.out.println("Carriage #" + ++counterOfCarriages + " works");
             movingContent = carriage.getRandomAmountOfContentToGo();
             if (carriage instanceof CarriageImplCargo && currentStation instanceof ICargo){
                 ((CarriageImplCargo)carriage).unloadCargos(movingContent);
-                ((StationImplCargo) currentStation).uploadCargos(movingContent);
+                ((ICargo) currentStation).uploadCargos(movingContent);
             }
 
             if (carriage instanceof CarriageImplPassenger && currentStation instanceof IPassenger){
                 ((CarriageImplPassenger)carriage).unloadPassengers(movingContent);
-                ((ICargo) currentStation).uploadCargos(movingContent);
+                ((IPassenger) currentStation).uploadPassengers(movingContent);
             }
         }
     }
@@ -99,8 +102,11 @@ public class Train implements Runnable{
         if(dispatcherCenter.isWayValid(currentStation.getID(), route.get(nextStation))){
             try{
                 //можно сделать класс для вывода по типу паттерна команда
+                System.out.println("---------------------------------------------------------------");
                 System.out.println(this.name + " moves from " + currentStation.getName()
                         + " to " + dispatcherCenter.stations.get(route.get(nextStation)).getName());
+                work();
+                System.out.println("Trip will take an " + calculateTravelTime() + " seconds");
                 TimeUnit.SECONDS.sleep(calculateTravelTime());
             } catch (InterruptedException e){
                 e.printStackTrace();
@@ -116,13 +122,27 @@ public class Train implements Runnable{
         nextPosInRoute++;
     }
 
-    public void work(){
+    public void work() throws InterruptedException {
+        printInfoAboutCarriages("Before work: ");
         unloadAllCarriages();
+        printInfoAboutCarriages("Before uploading: ");
         uploadAllCarriages();
+        printInfoAboutCarriages("After Work: ");
     }
 
     public void skipStation(){
         System.out.println("just chilling\n");
+    }
+
+    public void printInfoAboutCarriages(String marker){
+        for (Carriage carriage : carriages) {
+            if (carriage instanceof ICargo){
+                System.out.println(marker + " " + ((ICargo) carriage).getAmountOfCargos() + " cargos");
+            }
+            if (carriage instanceof  IPassenger){
+                System.out.println(marker + " " + ((IPassenger) carriage).getAmountOfPassengers() + " passengers");
+            }
+        }
     }
 }
 
@@ -142,7 +162,7 @@ class CargoTrain extends Train{
     @Override
     public void work() {
         if(currentStation instanceof ICargo){
-            super.work();
+         //   super.work();
         }
         else skipStation();
     }
@@ -183,7 +203,7 @@ class PassengerTrain extends  Train{
     @Override
     public void work() {
         if(currentStation instanceof IPassenger){
-            super.work();
+          //  super.work();
         }
     }
 
