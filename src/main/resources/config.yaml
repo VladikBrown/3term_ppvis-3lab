@@ -26,6 +26,21 @@ stations:
    - id: 9
      name: "Vilnius"
      type: "Cargo and Passenger"
+   - id: 10
+     name: "Riga"
+     type: "Passenger"
+   - id: 11
+     name: "Gdansk"
+     type: "Cargo"
+   - id: 12
+     name: "Orel"
+     type: "Cargo and Passenger"
+   - id: 13
+     name: "Mogilev"
+     type: "Passenger"
+   - id: 14
+     name: "Kiev"
+     type: "Cargo and Passenger"
 trains:
    - id: 1
      name: "SPB - Warsaw"
@@ -49,3 +64,29 @@ trains:
         - 1
         - 5
         - 6
+   - id: 2
+     name: "Riga - Orel"
+     type: "Cargo and Passenger"
+     power: 1800
+     carriages:
+       - type: "Passenger"
+         amountOfContent: 50
+       - type: "Passenger"
+         amountOfContent: 40
+       - type: "Passenger"
+         amountOfContent: 30
+       - type: "Cargo"
+         amountOfContent: 100
+       - type: "Cargo"
+         amountOfContent: 50
+       - type: "Cargo"
+         amountOfContent: 0
+     route:
+       - 10
+       - 11
+       - 6
+       - 8
+       - 9
+       - 7
+       - 13
+       - 12

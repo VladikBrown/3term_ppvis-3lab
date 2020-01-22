@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 public final class DispatcherCenter extends Thread{
@@ -18,49 +17,55 @@ public final class DispatcherCenter extends Thread{
     public static final int STATION_CARGO_RESOURCE = 1000;
 
     //пофикстить объявление
-    private static int[][] adjencyMatrix = new int[0][0];
+    private static int[][] adjacencyMatrix = new int[0][0];
     public Map<Integer, Station> stations;
 
     private static DispatcherCenter dispatcherCenter;
 
-    private DispatcherCenter(String path) throws IOException {
+    private DispatcherCenter() throws IOException {
         stations = new HashMap<>();
         Config config = ConfigReader.read(CONFIG_PATH);
         applyConfigurationOfStations(config);
         int size = stations.size();
-        adjencyMatrix = new int[size][size];
+        adjacencyMatrix = new int[size][size];
         readMatrix(MATRIX_PATH);
     }
 
-    public static DispatcherCenter getRailRoad(String configPath) throws IOException {
+    public static DispatcherCenter getRailRoad() throws IOException {
         // possible i have to use threads
         if (dispatcherCenter == null) {
-            dispatcherCenter = new DispatcherCenter(configPath);
+            dispatcherCenter = new DispatcherCenter();
         }
         return dispatcherCenter;
     }
 
     //обновление "населения" в потоке
-    private synchronized void refreshStationsContent(int amountOfArrivingConent){
+    private synchronized void refreshStationsContent(int amountOfArrivingContent){
         for (Station station : stations.values()) {
             if(station instanceof IPassenger){
-                ((StationImplPassengers) station).uploadPassengers(amountOfArrivingConent);
+                ((StationImplPassengers) station).uploadPassengers(amountOfArrivingContent);
             }
             if (station instanceof ICargo){
-                ((StationImplCargo) station).uploadCargos(amountOfArrivingConent);
+                ((StationImplCargo) station).uploadCargos(amountOfArrivingContent);
             }
         }
     }
 
     public int getDistance(int currentStation, int nextStation){
-        return adjencyMatrix[currentStation-1][nextStation-1];
+        return adjacencyMatrix[currentStation-1][nextStation-1];
     }
 
     public boolean isWayValid(int currentStation, int nextStation) {
-        if(adjencyMatrix[currentStation-1][nextStation-1] != 0) {
-            return true;
+        if (nextStation < stations.size()){
+            if(adjacencyMatrix[currentStation-1][nextStation-1] != 0) {
+                return true;
+            }
+            else return false;
         }
-        else return false;
+        else{
+            System.out.println("Such station doesn't exist");
+            return false;
+        }
     }
 
     public Station getStation(int stationID) {
@@ -96,10 +101,10 @@ public final class DispatcherCenter extends Thread{
         }
         int matrixLength = lines.get(0).split(" ").length;
 
-        for (int i = 0; i < matrixLength; i++) {
-            for (int j = 0; j < matrixLength; j++) {
+        for (int i = 0; i < matrixLength-1; i++) {
+            for (int j = 0; j < matrixLength-1; j++) {
                 String[] line = lines.get(i).split(" ");
-                adjencyMatrix[i][j] = Integer.parseInt(line[j]);
+                adjacencyMatrix[i][j] = Integer.parseInt(line[j]);
             }
         }
     }

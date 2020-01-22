@@ -6,7 +6,7 @@ import java.io.*;
 public class Runner {
     public static void main(String[] args) throws IOException {
         RailRoadModel railRoadModel = new RailRoadModel();
-        railRoadModel.start("");
+        railRoadModel.start(args.toString());
     }
 }
 

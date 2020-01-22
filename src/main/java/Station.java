@@ -1,6 +1,11 @@
 abstract public class Station{
     abstract public int getID();
     abstract public String getName();
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
 
 class StationImplCargo extends Station implements ICargo{
@@ -13,6 +18,7 @@ class StationImplCargo extends Station implements ICargo{
         this.amountOfCargos = amountOfCargos;
         ID = id;
         this.name = name;
+        String n = "gf";
     }
 
 

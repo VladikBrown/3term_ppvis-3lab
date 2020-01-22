@@ -1,6 +1,7 @@
 import railroad.support.Config;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class Train implements Runnable{
@@ -11,16 +12,29 @@ public class Train implements Runnable{
     private List<Integer> route;
     private Integer currentPosInRoute;
     private Integer nextPosInRoute;
+    private boolean wasLogGiven;
 
     private int weightOfTrain;
     private Station currentStation;
     private DispatcherCenter dispatcherCenter;
 
-    @Override
-    public void run() {
+    protected void manualControl() throws InterruptedException {
+        Scanner in = new Scanner(System.in);
+        System.out.println(dispatcherCenter.stations);
+        System.out.println("You are controlling train: " + name + ", current station is " + currentStation);
+        Integer instruction;
+        do{
+            System.out.println("Where will we go? (Type \"-1\" to finish trip)");
+            instruction = in.nextInt();
+            move(instruction);
+        }while(instruction != -1);
+        System.out.println("Trip finished!");
+    }
+
+    protected void autoControl(){
         while(currentPosInRoute < route.size()-1){
             try {
-                move(nextPosInRoute);
+                move(route.get(nextPosInRoute));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -28,7 +42,22 @@ public class Train implements Runnable{
         System.out.println("You arrived!");
     }
 
-    public Train(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter) {
+    @Override
+    public void run() {
+       if(true){
+           try {
+               manualControl();
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+       }
+       else {
+           autoControl();
+       }
+    }
+
+    public Train(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter , String log) {
+        checkLog(log);
         this.dispatcherCenter = dispatcherCenter;
         this.locomotive = new Locomotive(rawTrain.getPower());
         this.id = rawTrain.getId();
@@ -40,7 +69,7 @@ public class Train implements Runnable{
         route.addAll(rawTrain.getRoute());
         prepareCarriages(rawTrain);
         calculateWeight();
-        currentStation = dispatcherCenter.stations.get(route.get(currentPosInRoute));
+        currentStation = dispatcherCenter.stations.get(route.get(0));
     }
 
     protected void prepareCarriages(Config.RawTrain rawTrain){
@@ -55,8 +84,8 @@ public class Train implements Runnable{
     }
 
     // in seconds
-    protected int calculateTravelTime(){
-        return dispatcherCenter.getDistance(currentStation.getID(), route.get(nextPosInRoute))
+    protected int calculateTravelTime(int nextStation){
+        return dispatcherCenter.getDistance(currentStation.getID(), nextStation)
                 / (weightOfTrain
                 / locomotive.getIndexOfPower());
     }
@@ -64,7 +93,7 @@ public class Train implements Runnable{
     protected void uploadAllCarriages() throws InterruptedException {
         for (Carriage carriage : carriages ) {
             //убрать голый параметр
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(500);
             if (carriage instanceof CarriageImplCargo && currentStation instanceof ICargo){
                 ((ICargo) currentStation).unloadCargos(carriage.getAvailableSpace());
                 ((CarriageImplCargo)carriage).uploadCargos(carriage.getAvailableSpace());
@@ -78,15 +107,12 @@ public class Train implements Runnable{
     }
     protected void unloadAllCarriages(){
         int movingContent;
-        int counterOfCarriages = 0;
         for (Carriage carriage : carriages ) {
-            System.out.println("Carriage #" + ++counterOfCarriages + " works");
             movingContent = carriage.getRandomAmountOfContentToGo();
             if (carriage instanceof CarriageImplCargo && currentStation instanceof ICargo){
                 ((CarriageImplCargo)carriage).unloadCargos(movingContent);
                 ((ICargo) currentStation).uploadCargos(movingContent);
             }
-
             if (carriage instanceof CarriageImplPassenger && currentStation instanceof IPassenger){
                 ((CarriageImplPassenger)carriage).unloadPassengers(movingContent);
                 ((IPassenger) currentStation).uploadPassengers(movingContent);
@@ -101,20 +127,24 @@ public class Train implements Runnable{
     }
 
     protected void move(int nextStation) throws InterruptedException {
-        if(dispatcherCenter.isWayValid(currentStation.getID(), route.get(nextStation))){
+        if(dispatcherCenter.isWayValid(currentStation.getID(), nextStation)){
             try{
                 //можно сделать класс для вывода по типу паттерна команда
                 System.out.println("---------------------------------------------------------------");
-                System.out.println(this.name + " moves from " + currentStation.getName()
-                        + " to " + dispatcherCenter.stations.get(route.get(nextStation)).getName());
+                System.out.println("Welcome to the " + currentStation.getName());
                 work();
-                System.out.println("Trip will take an " + calculateTravelTime() + " seconds");
-                TimeUnit.SECONDS.sleep(calculateTravelTime());
+                System.out.println(this.name + " moves from " + currentStation.getName()
+                        + " to " + dispatcherCenter.stations.get(nextStation).getName());
+                System.out.println("Trip will take an " + calculateTravelTime(nextStation) + " seconds");
+                TimeUnit.SECONDS.sleep(calculateTravelTime(nextStation));
             } catch (InterruptedException e){
                 e.printStackTrace();
             }
-            currentStation = dispatcherCenter.getStation(route.get(nextStation));
+            currentStation = dispatcherCenter.getStation(nextStation);
             increaseCurrentPosInRoute();
+        }
+        else {
+            System.out.println("This way doesn't exist!");
         }
     }
 
@@ -124,11 +154,10 @@ public class Train implements Runnable{
     }
 
     protected void work() throws InterruptedException {
-        printInfoAboutCarriages("Before work: ");
+        printInfoAboutCarriages("Before unloading: ");
         unloadAllCarriages();
-        printInfoAboutCarriages("Before uploading: ");
+        printInfoAboutCarriages("After unloading: ");
         uploadAllCarriages();
-        printInfoAboutCarriages("After Work: ");
     }
 
     protected void skipStation(){
@@ -136,12 +165,15 @@ public class Train implements Runnable{
     }
 
     public void printInfoAboutCarriages(String marker){
+        int counterOfCarriages = 0;
         for (Carriage carriage : carriages) {
             if (carriage instanceof ICargo){
-                System.out.println(marker + " " + ((ICargo) carriage).getAmountOfCargos() + " cargos");
+                System.out.println(marker + "Carriage #" + ++counterOfCarriages + " has "
+                        + ((ICargo) carriage).getAmountOfCargos() + " cargos");
             }
             if (carriage instanceof  IPassenger){
-                System.out.println(marker + " " + ((IPassenger) carriage).getAmountOfPassengers() + " passengers");
+                System.out.println(marker + "Carriage #" + ++counterOfCarriages + " has "
+                        + " " + ((IPassenger) carriage).getAmountOfPassengers() + " passengers");
             }
         }
     }
@@ -153,6 +185,15 @@ public class Train implements Runnable{
     public String getName() {
         return name;
     }
+
+    protected void checkLog(String log){
+            if("log".equals(log)){
+                wasLogGiven = true;
+            }
+            else{
+                wasLogGiven = false;
+            }
+    }
 }
 
 
@@ -163,8 +204,8 @@ class CargoTrain extends Train{
     private int weightOfTrain;
     private Station currentStation;
 
-    public CargoTrain(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter) {
-        super(rawTrain, dispatcherCenter);
+    public CargoTrain(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter, String log) {
+        super(rawTrain, dispatcherCenter, log);
     }
 
 
@@ -205,9 +246,10 @@ class PassengerTrain extends  Train{
     private int weightOfTrain;
     private Station currentStation;
 
-    public PassengerTrain(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter) {
-        super(rawTrain, dispatcherCenter);
+    public PassengerTrain(Config.RawTrain rawTrain, DispatcherCenter dispatcherCenter, String log) {
+        super(rawTrain, dispatcherCenter, log);
     }
+
 
     @Override
     public void work() {
